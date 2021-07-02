@@ -1,0 +1,36 @@
+name: Maven Build
+on:
+  pull_request:
+    branches:
+    - master
+jobs:
+  maven-build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        java: [11, 16]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+
+    - name: Set up cache for ~/.m2/repository
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ matrix.os }}-java${{ matrix.java }}-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          maven-${{ matrix.os }}-java${{ matrix.java }}-
+          maven-${{ matrix.os }}-
+
+    - name: Set up JDK
+      uses: actions/setup-java@v2
+      with:
+        distribution: adopt
+        java-version: ${{ matrix.java }}
+        check-latest: true
+
+    - name: Maven Build
+      run: mvn -B install site

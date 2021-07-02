@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2019-2021 Foreseeti AB <https://foreseeti.com>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/DECORATION/1.8.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/DECORATION/1.8.0 http://maven.apache.org/xsd/decoration-1.8.0.xsd" name="${project.name}">
+  <bannerLeft>
+    <name>${project.organization.name}</name>
+    <src>${project.organization.url}/helmet.svg</src>
+    <alt>${project.organization.name}</alt>
+    <href>${project.organization.url}</href>
+    <width>64</width>
+    <height>64</height>
+    <title>${project.organization.name}</title>
+  </bannerLeft>
+  <publishDate position="right"/>
+  <version position="right"/>
+  <edit>${project.scm.url}</edit>
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>1.9</version>
+  </skin>
+  <body>
+    <breadcrumbs>
+      <item name="${project.organization.name}" href="${project.organization.url}"/>
+      <item name="${project.name}" href="${project.url}"/>
+    </breadcrumbs>
+    <menu ref="reports"/>
+    <footer><![CDATA[
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <p>
+          Copyright &copy; 2019-2021
+          <a href="https://foreseeti.com"><span style="white-space: nowrap;">Foreseeti AB</span></a>,
+          Licensed under the
+          <a href="https://www.apache.org/licenses/LICENSE-2.0"><span style="white-space: nowrap;">Apache License, Version 2.0</span></a>.
+        </p>
+        <img src="${project.organization.url}/helmet.svg" alt="MAL" title="MAL" style="width: 3em; height: 3em;"/>
+        <p>
+          This work,
+          <span style="white-space: nowrap;">&quot;MAL logo&quot;</span>,
+          is a derivative of
+          <a href="https://thenounproject.com/term/diving-helmet/2448842/"><span style="white-space: nowrap;">&quot;Diving Helmet&quot;</span></a>
+          icon by
+          <a href="https://thenounproject.com/madexmadeicons/"><span style="white-space: nowrap;">Made x Made Icons</span></a>
+          from
+          <a href="https://thenounproject.com"><span style="white-space: nowrap;">the Noun Project</span></a>,
+          used under
+          <a href="https://creativecommons.org/licenses/by/3.0/"><span style="white-space: nowrap;">CC BY 3.0</span></a>.
+        </p>
+        <p>
+          <span style="white-space: nowrap;">&quot;MAL logo&quot;</span>
+          is licensed under
+          <a href="https://creativecommons.org/licenses/by/4.0/"><span style="white-space: nowrap;">CC BY 4.0</span></a>
+          by
+          <a href="https://foreseeti.com"><span style="white-space: nowrap;">Foreseeti AB</span></a>.
+        </p>
+      </div>
+    ]]></footer>
+  </body>
+  <custom>
+    <fluidoSkin>
+      <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
+      <gitHub>
+        <projectId>mal-lang/${project.artifactId}</projectId>
+        <ribbonOrientation>right</ribbonOrientation>
+      </gitHub>
+    </fluidoSkin>
+  </custom>
+</project>

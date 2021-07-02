@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2019-2021 Foreseeti AB <https://foreseeti.com>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.mal-lang</groupId>
+    <artifactId>mal-parent</artifactId>
+    <version>7</version>
+    <relativePath/>
+  </parent>
+
+  <artifactId>malc</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>malc</name>
+  <description>A compiler for the Meta Attack Language.</description>
+  <url>${project.organization.url}/${project.artifactId}</url>
+  <inceptionYear>2019</inceptionYear>
+  <licenses>
+    <license>
+      <name>Apache-2.0</name>
+      <url>https://apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>mikaelforeseeti</id>
+      <name>Mikael Modin</name>
+      <email>mikael.modin@foreseeti.com</email>
+      <organization>foreseeti</organization>
+      <organizationUrl>https://foreseeti.com</organizationUrl>
+    </developer>
+    <developer>
+      <id>simonwrede-foreseeti</id>
+      <name>Simon Wrede</name>
+      <email>simon.wrede@foreseeti.com</email>
+      <organization>foreseeti</organization>
+      <organizationUrl>https://foreseeti.com</organizationUrl>
+    </developer>
+    <developer>
+      <id>maxwalls</id>
+      <name>Max Wällstedt</name>
+      <email>max.wallstedt@foreseeti.com</email>
+      <url>https://github.com/maxwalls</url>
+      <organization>foreseeti</organization>
+      <organizationUrl>https://foreseeti.com</organizationUrl>
+      <roles>
+        <role>developer</role>
+      </roles>
+      <timezone>Europe/Stockholm</timezone>
+      <properties>
+        <picUrl>https://www.gravatar.com/avatar/f32021f9158fb3e2fc06414d056f46ec?size=64</picUrl>
+      </properties>
+    </developer>
+  </developers>
+
+  <scm>
+    <tag>HEAD</tag>
+    <url>https://github.com/mal-lang/${project.artifactId}</url>
+  </scm>
+
+  <properties>
+    <mainClass>org.mal_lang.compiler.MalCompiler</mainClass>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.mal-lang</groupId>
+      <artifactId>mal-langspec</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mal-lang</groupId>
+      <artifactId>mal-lib</artifactId>
+      <version>0.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>info.picocli</groupId>
+              <artifactId>picocli-codegen</artifactId>
+              <version>${picocliVersion}</version>
+            </path>
+          </annotationProcessorPaths>
+          <compilerArgs>
+            <arg>-Xlint:all</arg>
+            <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
+          </compilerArgs>
+          <fork>true</fork>
+          <showDeprecation>true</showDeprecation>
+          <showWarnings>true</showWarnings>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+              <addBuildEnvironmentEntries>true</addBuildEnvironmentEntries>
+              <mainClass>${mainClass}</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generateManPages</id>
+            <phase>package</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>picocli.codegen.docgen.manpage.ManPageGenerator</mainClass>
+              <arguments>
+                <argument>--outdir=${project.build.directory}/generated-picocli-docs</argument>
+                <argument>${mainClass}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-autocompletion-script</id>
+            <phase>package</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>picocli.AutoComplete</mainClass>
+              <arguments>
+                <argument>--completionScript</argument>
+                <argument>${project.build.directory}/malc_completion.sh</argument>
+                <argument>${mainClass}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <addOutputToClasspath>false</addOutputToClasspath>
+          <additionalClasspathElements>${project.build.directory}/${project.build.finalName}.jar</additionalClasspathElements>
+          <includePluginDependencies>true</includePluginDependencies>
+          <includeProjectDependencies>true</includeProjectDependencies>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli-codegen</artifactId>
+            <version>${picocliVersion}</version>
+            <type>jar</type>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.asciidoctor</groupId>
+        <artifactId>asciidoctor-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>output-html</id>
+            <phase>package</phase>
+            <goals>
+              <goal>process-asciidoc</goal>
+            </goals>
+            <configuration>
+              <sourceHighlighter>coderay</sourceHighlighter>
+              <backend>html5</backend>
+            </configuration>
+          </execution>
+          <execution>
+            <id>output-manpage</id>
+            <phase>package</phase>
+            <goals>
+              <goal>process-asciidoc</goal>
+            </goals>
+            <configuration>
+              <sourceHighlighter>coderay</sourceHighlighter>
+              <backend>manpage</backend>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <sourceDirectory>${project.build.directory}/generated-picocli-docs</sourceDirectory>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>index</report>
+              <report>summary</report>
+              <report>dependency-info</report>
+              <report>scm</report>
+              <report>issue-management</report>
+              <report>team</report>
+              <report>licenses</report>
+              <report>plugin-management</report>
+              <report>plugins</report>
+              <report>dependency-management</report>
+              <report>dependencies</report>
+              <report>dependency-convergence</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>analyze-report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>third-party-report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>jxr</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+        <configuration>
+          <bottom><![CDATA[
+            <p>
+              Copyright &copy; 2019-2021
+              <a href="https://foreseeti.com"><span style="white-space: nowrap;">Foreseeti AB</span></a>,
+              Licensed under the
+              <a href="https://www.apache.org/licenses/LICENSE-2.0"><span style="white-space: nowrap;">Apache License, Version 2.0</span></a>.
+            </p>
+          ]]></bottom>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>javadoc</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+        <configuration>
+          <bottom><![CDATA[
+            <p>
+              Copyright &copy; 2019-2021
+              <a href="https://foreseeti.com"><span style="white-space: nowrap;">Foreseeti AB</span></a>,
+              Licensed under the
+              <a href="https://www.apache.org/licenses/LICENSE-2.0"><span style="white-space: nowrap;">Apache License, Version 2.0</span></a>.
+            </p>
+          ]]></bottom>
+          <links>
+            <link>https://eclipse-ee4j.github.io/jsonp/docs/api</link>
+            <link>https://mal-lang.org/mal-langspec/apidocs</link>
+            <link>https://mal-lang.org/mal-lib/apidocs</link>
+          </links>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>checkstyle</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>pmd</report>
+              <report>cpd</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>spotbugs</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+</project>
