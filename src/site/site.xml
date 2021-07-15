@@ -37,6 +37,10 @@ limitations under the License.
       <item name="${project.organization.name}" href="${project.organization.url}"/>
       <item name="${project.name}" href="${project.url}"/>
     </breadcrumbs>
+    <menu name="Overview">
+      <item name="Introduction" href="index.html"/>
+      <item name="Manual Page" href="malc.html"/>
+    </menu>
     <menu ref="reports"/>
     <footer><![CDATA[
       <div style="display: flex; flex-direction: column; align-items: center;">
