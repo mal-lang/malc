@@ -78,6 +78,7 @@ limitations under the License.
   </scm>
 
   <properties>
+    <moduleName>org.mal_lang.compiler</moduleName>
     <mainClass>org.mal_lang.compiler.MalCompiler</mainClass>
   </properties>
 
@@ -125,7 +126,7 @@ limitations under the License.
             </path>
           </annotationProcessorPaths>
           <compilerArgs>
-            <arg>-Xlint:all</arg>
+            <arg>-Xlint:all,-processing,-requires-automatic</arg>
             <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
           </compilerArgs>
           <fork>true</fork>
@@ -148,21 +149,215 @@ limitations under the License.
         </configuration>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>build-classpath</id>
+            <phase>package</phase>
+            <goals>
+              <goal>build-classpath</goal>
+            </goals>
+            <configuration>
+              <outputProperty>maven.runtime.classpath</outputProperty>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <includeScope>runtime</includeScope>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>third-party-licenses</id>
+            <phase>package</phase>
+            <goals>
+              <goal>add-third-party</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/app-input</outputDirectory>
+              <failOnBlacklist>true</failOnBlacklist>
+              <failOnMissing>true</failOnMissing>
+              <includedScopes>compile,runtime</includedScopes>
+              <licenseMerges>
+                <licenseMerge>The Apache Software License, Version 2.0 | The Apache Software License, version 2.0 | Apache-2.0</licenseMerge>
+              </licenseMerges>
+            </configuration>
+          </execution>
+          <execution>
+            <id>download-licenses</id>
+            <phase>package</phase>
+            <goals>
+              <goal>download-licenses</goal>
+            </goals>
+            <configuration>
+              <errorRemedy>xmlOutput</errorRemedy>
+              <includedScopes>compile,runtime</includedScopes>
+              <licensesErrorsFile>${project.build.directory}/app-input/licenses-errors.xml</licensesErrorsFile>
+              <licensesOutputDirectory>${project.build.directory}/app-input/licenses</licensesOutputDirectory>
+              <licensesOutputFile>${project.build.directory}/app-input/licenses.xml</licensesOutputFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-license-and-readme</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/app-input</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}</directory>
+                  <includes>
+                    <include>LICENSE</include>
+                    <include>NOTICE</include>
+                    <include>README.md</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-scripts</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/scripts</outputDirectory>
+              <resources>
+                <resource>
+                  <filtering>true</filtering>
+                  <directory>${project.basedir}/src/scripts-filtered</directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>generateManPages</id>
+            <id>generate-icu4j-module-info</id>
             <phase>package</phase>
             <goals>
-              <goal>java</goal>
+              <goal>exec</goal>
             </goals>
             <configuration>
-              <mainClass>picocli.codegen.docgen.manpage.ManPageGenerator</mainClass>
               <arguments>
-                <argument>--outdir=${project.build.directory}/generated-picocli-docs</argument>
-                <argument>${mainClass}</argument>
+                <argument>--generate-module-info</argument>
+                <argument>${project.build.directory}/generated-sources</argument>
+                <argument>${project.build.directory}/dependency/icu4j-68.1.jar</argument>
               </arguments>
+              <executable>${java.home}/bin/jdeps</executable>
+            </configuration>
+          </execution>
+          <execution>
+            <id>compile-icu4j-module-info</id>
+            <phase>package</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <arguments>
+                <argument>-d</argument>
+                <argument>${project.build.directory}/generated-sources/com.ibm.icu</argument>
+                <argument>--patch-module</argument>
+                <argument>com.ibm.icu=${project.build.directory}/dependency/icu4j-68.1.jar</argument>
+                <argument>${project.build.directory}/generated-sources/com.ibm.icu/module-info.java</argument>
+              </arguments>
+              <executable>${java.home}/bin/javac</executable>
+            </configuration>
+          </execution>
+          <execution>
+            <id>inject-icu4j-module-info</id>
+            <phase>package</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <arguments>
+                <argument>--update</argument>
+                <argument>--file</argument>
+                <argument>${project.build.directory}/dependency/icu4j-68.1.jar</argument>
+                <argument>--module-version</argument>
+                <argument>68.1</argument>
+                <argument>-C</argument>
+                <argument>${project.build.directory}/generated-sources/com.ibm.icu</argument>
+                <argument>module-info.class</argument>
+              </arguments>
+              <executable>${java.home}/bin/jar</executable>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-jansi-module-info</id>
+            <phase>package</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <arguments>
+                <argument>--generate-module-info</argument>
+                <argument>${project.build.directory}/generated-sources</argument>
+                <argument>${project.build.directory}/dependency/jansi-2.3.3.jar</argument>
+              </arguments>
+              <executable>${java.home}/bin/jdeps</executable>
+            </configuration>
+          </execution>
+          <execution>
+            <id>compile-jansi-module-info</id>
+            <phase>package</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <arguments>
+                <argument>-d</argument>
+                <argument>${project.build.directory}/generated-sources/org.fusesource.jansi</argument>
+                <argument>--patch-module</argument>
+                <argument>org.fusesource.jansi=${project.build.directory}/dependency/jansi-2.3.3.jar</argument>
+                <argument>${project.build.directory}/generated-sources/org.fusesource.jansi/module-info.java</argument>
+              </arguments>
+              <executable>${java.home}/bin/javac</executable>
+            </configuration>
+          </execution>
+          <execution>
+            <id>inject-jansi-module-info</id>
+            <phase>package</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <arguments>
+                <argument>--update</argument>
+                <argument>--file</argument>
+                <argument>${project.build.directory}/dependency/jansi-2.3.3.jar</argument>
+                <argument>--module-version</argument>
+                <argument>2.3.3</argument>
+                <argument>-C</argument>
+                <argument>${project.build.directory}/generated-sources/org.fusesource.jansi</argument>
+                <argument>module-info.class</argument>
+              </arguments>
+              <executable>${java.home}/bin/jar</executable>
             </configuration>
           </execution>
           <execution>
@@ -175,7 +370,21 @@ limitations under the License.
               <mainClass>picocli.AutoComplete</mainClass>
               <arguments>
                 <argument>--completionScript</argument>
-                <argument>${project.build.directory}/malc_completion.sh</argument>
+                <argument>${project.build.directory}/app-input/malc_completion.sh</argument>
+                <argument>${mainClass}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-man-page</id>
+            <phase>package</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>picocli.codegen.docgen.manpage.ManPageGenerator</mainClass>
+              <arguments>
+                <argument>--outdir=${project.build.directory}/generated-picocli-docs</argument>
                 <argument>${mainClass}</argument>
               </arguments>
             </configuration>
@@ -201,52 +410,27 @@ limitations under the License.
         <artifactId>asciidoctor-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>output-html</id>
-            <phase>package</phase>
-            <goals>
-              <goal>process-asciidoc</goal>
-            </goals>
-            <configuration>
-              <sourceHighlighter>coderay</sourceHighlighter>
-              <backend>html5</backend>
-            </configuration>
-          </execution>
-          <execution>
             <id>output-manpage</id>
             <phase>package</phase>
             <goals>
               <goal>process-asciidoc</goal>
             </goals>
             <configuration>
-              <sourceHighlighter>coderay</sourceHighlighter>
+              <sourceDirectory>${project.build.directory}/generated-picocli-docs</sourceDirectory>
+              <outputDirectory>${project.build.directory}/app-input</outputDirectory>
               <backend>manpage</backend>
             </configuration>
           </execution>
-        </executions>
-        <configuration>
-          <sourceDirectory>${project.build.directory}/generated-picocli-docs</sourceDirectory>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-resources-plugin</artifactId>
-        <executions>
           <execution>
-            <id>copy-resources</id>
+            <id>output-html</id>
             <phase>package</phase>
             <goals>
-              <goal>copy-resources</goal>
+              <goal>process-asciidoc</goal>
             </goals>
             <configuration>
+              <sourceDirectory>${project.build.directory}/generated-picocli-docs</sourceDirectory>
               <outputDirectory>${project.build.directory}/site</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${project.build.directory}/generated-docs</directory>
-                  <includes>
-                    <include>malc.html</include>
-                  </includes>
-                </resource>
-              </resources>
+              <backend>html5</backend>
             </configuration>
           </execution>
         </executions>
@@ -405,4 +589,40 @@ limitations under the License.
       </plugin>
     </plugins>
   </reporting>
+
+  <profiles>
+    <profile>
+      <id>linux</id>
+      <activation>
+        <os>
+          <name>Linux</name>
+        </os>
+      </activation>
+      <properties>
+        <osName>linux</osName>
+      </properties>
+    </profile>
+    <profile>
+      <id>mac</id>
+      <activation>
+        <os>
+          <name>Mac OS X</name>
+        </os>
+      </activation>
+      <properties>
+        <osName>mac</osName>
+      </properties>
+    </profile>
+    <profile>
+      <id>win</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <properties>
+        <osName>win</osName>
+      </properties>
+    </profile>
+  </profiles>
 </project>
