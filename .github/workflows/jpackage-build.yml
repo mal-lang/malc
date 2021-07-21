@@ -1,0 +1,64 @@
+name: jpackage Build
+on:
+  pull_request:
+    branches:
+    - master
+jobs:
+  jpackage-build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+
+    - name: Set up cache for ~/.m2/repository
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ matrix.os }}-java11-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          maven-${{ matrix.os }}-java11-
+          maven-${{ matrix.os }}-
+
+    - name: Set up Java 11
+      uses: actions/setup-java@v2
+      with:
+        distribution: adopt
+        java-version: 11
+        check-latest: true
+
+    - name: Maven Build
+      run: mvn -B verify
+
+    - name: Set up Java 16
+      uses: actions/setup-java@v2
+      with:
+        distribution: adopt
+        java-version: 16
+        check-latest: true
+
+    - name: Install jpackage prerequisites [Linux]
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo apt-get -y install fakeroot rpm
+
+    - name: Install jpackage prerequisites [Windows]
+      if: matrix.os == 'windows-latest'
+      run: choco install wixtoolset
+      shell: cmd
+
+    - name: jpackage Build [Linux]
+      if: matrix.os == 'ubuntu-latest'
+      run: ./target/scripts/create-jpackage-linux.sh
+
+    - name: jpackage Build [macOS]
+      if: matrix.os == 'macos-latest'
+      run: ./target/scripts/create-jpackage-mac.sh
+
+    - name: jpackage Build [Windows]
+      if: matrix.os == 'windows-latest'
+      run: .\target\scripts\create-jpackage-win.bat
+      shell: cmd
