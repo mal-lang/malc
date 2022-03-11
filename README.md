@@ -284,6 +284,6 @@ This will create one of the following archives depending on your platform:
 
 ## License
 
-Copyright © 2019-2021 [Foreseeti AB](https://foreseeti.com)
+Copyright © 2019-2022 [Foreseeti AB](https://foreseeti.com)
 
 Licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).

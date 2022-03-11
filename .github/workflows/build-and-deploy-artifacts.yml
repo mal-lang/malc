@@ -23,18 +23,18 @@ jobs:
     - name: Set up Java 11
       uses: actions/setup-java@v2
       with:
-        distribution: adopt
+        distribution: temurin
         java-version: 11
         check-latest: true
 
     - name: Maven Build
       run: mvn -B verify
 
-    - name: Set up Java 16
+    - name: Set up Java 17
       uses: actions/setup-java@v2
       with:
-        distribution: adopt
-        java-version: 16
+        distribution: temurin
+        java-version: 17
         check-latest: true
 
     - name: Install jpackage prerequisites [Linux]
@@ -60,19 +60,12 @@ jobs:
       shell: cmd
 
     - name: Set up GraalVM
-      uses: ayltai/setup-graalvm@v1
+      uses: graalvm/setup-graalvm@v1
       with:
-        java-version: 11
-        graalvm-version: 21.1.0
-        native-image: true
-
-    - name: Install native-image prerequisites [Linux]
-      if: matrix.os == 'ubuntu-latest'
-      run: sudo apt-get -y install build-essential libz-dev zlib1g-dev
-
-    - name: Install native-image prerequisites [Windows]
-      if: matrix.os == 'windows-latest'
-      uses: ilammy/msvc-dev-cmd@v1
+        version: 'latest'
+        java-version: '11'
+        components: 'native-image'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: native-image Build [Linux]
       if: matrix.os == 'ubuntu-latest'
