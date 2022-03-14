@@ -37,7 +37,7 @@ main() {
           cut -d + -f 1 |
           sed "s/^00*\.//"
       )" \
-      --copyright "Copyright 2019-2021 Foreseeti AB &lt;https://foreseeti.com&gt;" \
+      --copyright "Copyright 2019-2022 Foreseeti AB &lt;https://foreseeti.com&gt;" \
       --description "${project.description}" \
       --name "${project.name}" \
       --dest "${project.build.directory}" \

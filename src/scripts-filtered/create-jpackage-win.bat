@@ -37,7 +37,7 @@ exit /b %errorlevel%
       call jpackage ^
         --type "%%t" ^
         --app-version "%project_version:-SNAPSHOT=%" ^
-        --copyright "Copyright 2019-2021 Foreseeti AB <https://foreseeti.com>" ^
+        --copyright "Copyright 2019-2022 Foreseeti AB <https://foreseeti.com>" ^
         --description "${project.description}" ^
         --name "${project.name}" ^
         --dest "${project.build.directory}" ^
